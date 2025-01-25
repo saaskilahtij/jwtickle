@@ -54,7 +54,7 @@ def test_both_arguments():
     with pytest.raises(SystemExit):
         args_parser()
 
-def test_jwt_parse():
+def test_jwtickle_parse():
     """
     Test the jwt_parse function.
     """
@@ -71,7 +71,7 @@ def test_jwt_parse():
     assert parsed_token.payload_decoded == payload
     assert parsed_token.signature_b64 == signature
 
-def test_jwt_encoded_to_string():
+def test_jwtickle_encoded_to_string():
     """
     Test the encoded_to_string method.
     """
@@ -87,7 +87,7 @@ def test_jwt_encoded_to_string():
 
     assert encoded_token == token
 
-def test_jwt_decoded_to_string():
+def test_jwtickle_decoded_to_string():
     """
     Test the decoded_to_string method.
     """

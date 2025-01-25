@@ -10,7 +10,7 @@ The tests cover the following functionalities:
 import json
 from source.jwtickle import JWTToken
 
-def test_jwt_token_parsed_initialization():
+def test_jwt_token_initialization():
     """
     Test the initialization of the JWTToken object.
     """
@@ -25,7 +25,7 @@ def test_jwt_token_parsed_initialization():
     assert jwt_token.signature_b64 == signature
     assert jwt_token.token_decoded == [json.dumps(header), json.dumps(payload)]
 
-def test_jwt_token_parsed_encoded_to_string():
+def test_jwt_token_encoded_to_string():
     """
     Test the encoded_to_string method of JWTToken.
     """
@@ -40,7 +40,7 @@ def test_jwt_token_parsed_encoded_to_string():
 
     assert encoded_token == fstring
 
-def test_jwt_token_parsed_decoded_to_string():
+def test_jwt_token_decoded_to_string():
     """
     Test the decoded_to_string method of JWTToken.
     """
@@ -53,7 +53,7 @@ def test_jwt_token_parsed_decoded_to_string():
 
     assert decoded_token == f"{json.dumps(header)}.{json.dumps(payload)}"
 
-def test_jwt_token_parsed_change_algorithm():
+def test_jwt_token_change_algorithm():
     """
     Test changing the algorithm in the JWT header.
     """
@@ -66,7 +66,7 @@ def test_jwt_token_parsed_change_algorithm():
 
     assert jwt_token.header_decoded["alg"] == "none"
 
-def test_jwt_token_parsed_change_type():
+def test_jwt_token_change_type():
     """
     Test changing the type in the JWT header.
     """
