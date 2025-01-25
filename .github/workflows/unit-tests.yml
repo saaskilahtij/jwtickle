@@ -1,11 +1,13 @@
-Name: Unit Tests
+name: Unit Tests
 
+on: [push]
+  
 jobs:
   build:
     runs-on: ubuntu-latest
-      strategy:
-        matrix:
-          python-version: ["3.8", "3.9", "3.10"]
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10"]
     steps: 
       - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
@@ -18,4 +20,4 @@ jobs:
           pip install -r dev-requirements.txt
       - name: Run unit tests
         run: |
-          pytest /tests
+          pytest tests
