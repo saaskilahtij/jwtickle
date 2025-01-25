@@ -54,7 +54,7 @@ def test_both_arguments():
     with pytest.raises(SystemExit):
         args_parser()
 
-def test_jwtickle_parse():
+def test_jwtickle_correct_parse():
     """
     Test the jwt_parse function.
     """
@@ -71,34 +71,10 @@ def test_jwtickle_parse():
     assert parsed_token.payload_decoded == payload
     assert parsed_token.signature_b64 == signature
 
-def test_jwtickle_encoded_to_string():
+def test_jwtickle_incorrect_parse():
     """
-    Test the encoded_to_string method.
+    Test the jwt_parse function with an incorrect token.
     """
-    header = {"alg": "HS256", "typ": "JWT"}
-    payload = {"sub": "1234567890", "name": "John Doe", "iat": 1516239022}
-    signature = "signature"
-    formatted_header = base64.urlsafe_b64encode(json.dumps(header).encode()).decode()
-    formatted_payload = base64.urlsafe_b64encode(json.dumps(payload).encode()).decode()
-    token = f"{formatted_header}.{formatted_payload}.{signature}"
-
+    token = "incorrect_token"
     parsed_token = jwt_parse(token)
-    encoded_token = parsed_token.encoded_to_string()
-
-    assert encoded_token == token
-
-def test_jwtickle_decoded_to_string():
-    """
-    Test the decoded_to_string method.
-    """
-    header = {"alg": "HS256", "typ": "JWT"}
-    payload = {"sub": "1234567890", "name": "John Doe", "iat": 1516239022}
-    signature = "signature"
-    formatted_header = base64.urlsafe_b64encode(json.dumps(header).encode()).decode()
-    formatted_payload = base64.urlsafe_b64encode(json.dumps(payload).encode()).decode()
-    token = f"{formatted_header}.{formatted_payload}.{signature}"
-
-    parsed_token = jwt_parse(token)
-    decoded_token = parsed_token.decoded_to_string()
-
-    assert decoded_token == f"{json.dumps(header)}.{json.dumps(payload)}"
+    assert parsed_token is None

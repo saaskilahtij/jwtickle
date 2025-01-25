@@ -43,6 +43,11 @@ def jwt_parse(jwt_token):
         Returns:
             JWTToken object
     """
+    # Check if the token is correctly formatted
+    if jwt_token.count('.') < 2:
+        print("Are JWT tokens correctly formatted?")
+        return None
+
     try:
         jwt_token_encoded = jwt_token.split('.')
         header_b64 = add_padding(jwt_token_encoded[0])
