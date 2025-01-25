@@ -20,4 +20,4 @@ jobs:
           pip install -r dev-requirements.txt
       - name: Run unit tests
         run: |
-          pytest /tests
+          pytest tests
