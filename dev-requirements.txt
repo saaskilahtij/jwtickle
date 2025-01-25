@@ -1,4 +1,2 @@
-json
-base64
 pytest
 pylint
