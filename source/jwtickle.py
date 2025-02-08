@@ -6,7 +6,7 @@ import argparse
 import json
 import base64
 import binascii
-from .jwt_token import JWTToken
+from jwt_token import JWTToken
 
 DESC = r"""
         JWTickle is a tool to tickle the security of JWTs.
