@@ -6,6 +6,10 @@ to return the token in string format.
 
 import json
 import base64
+import binascii
+import logging
+
+logger = logging.getLogger(__name__)
 
 class JWTToken:
     """
@@ -34,7 +38,7 @@ class JWTToken:
 
     def decoded_to_string(self):
         """
-            Return the token in string format.
+            Return a decoded token in string format.
         """
         return '.'.join(self.token_decoded)
 

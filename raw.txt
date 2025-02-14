@@ -1,0 +1,19 @@
+GET https://bumba.global/static/css/main.79430155.css HTTP/2.0
+user-agent: hackerone
+accept: text/css,*/*;q=0.1
+accept-language: en-GB,en;q=0.5
+accept-encoding: gzip, deflate, br, zstd
+referer: https://bumba.global/
+dnt: 1
+sec-gpc: 1
+cookie: _ga_N4E122K301=GS1.1.1739097613.4.1.1739098910.0.0.0
+cookie: _ga=GA1.1.1977469093.1739001892
+sec-fetch-dest: style
+sec-fetch-mode: no-cors
+sec-fetch-site: same-origin
+priority: u=2
+te: trailers
+content-length: 0
+
+
+

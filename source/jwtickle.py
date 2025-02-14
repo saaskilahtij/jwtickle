@@ -6,7 +6,13 @@ import argparse
 import json
 import base64
 import binascii
+import requests
+import sys
 from jwt_token import JWTToken
+import logging
+logger = logging.getLogger(__name__)
+
+# TODO ACTUALLY I JUST NEED TO CONSTRUCT THE JWTOKEN IN THE JWTOKEN CLASS
 
 DESC = r"""
         JWTickle is a tool to tickle the security of JWTs.
@@ -19,16 +25,19 @@ def args_parser():
     parser = argparse.ArgumentParser(description=DESC, prog='jwtickle.py',
                                     formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('-t', '--token', type=str, help='JWT as a string')
-    parser.add_argument('-f', '--file', type=str, help='file containing JWTs')
-    parser.add_argument('-n', '--none', action='store_true', help='print token with none algorithm')
+    parser.add_argument('-f', '--file', type=str, help='file containing a JWT')
+    parser.add_argument('-n', '--none', action='store_true', help='use none algorithm')
+    parser.add_argument('-r', '--request', type=str, help='make a request with a curl txt file')
+    parser.add_argument('--pd', '--print-decoded', action='store_true' , help='print the decoded JWToken')
+    parser.add_argument('--pe', '--print-encoded', action='store_true', help="print the encoded JWToken")
     args = parser.parse_args()
     if args.token and args.file:
-        parser.error("do not pass both arguments -t/--token and -f/--file")
+        parser.error("[-] do not pass both arguments -t/--token and -f/--file")
     if not args.token and not args.file:
-        parser.error("one of the arguments -t/--token or -f/--file must be provided")
+        parser.error("[-] one of the arguments -t/--token or -f/--file must be provided")
     return args
 
-def add_padding(base64_string):
+def padding_add(base64_string):
     """
         Add padding to the base64 string.
     """
@@ -45,51 +54,101 @@ def jwt_parse(jwt_token):
     """
     # Check if the token is correctly formatted
     if jwt_token.count('.') < 2:
-        print("Are JWT tokens correctly formatted?")
+        logger.error("[-] Error: JWT token count is less than 2")
+        logger.error("Is the JWT token correctly formatted?")
         return None
 
     try:
         jwt_token_encoded = jwt_token.split('.')
-        header_b64 = add_padding(jwt_token_encoded[0])
-        payload_b64 = add_padding(jwt_token_encoded[1])
+        header_b64 = padding_add(jwt_token_encoded[0])
+        payload_b64 = padding_add(jwt_token_encoded[1])
         signature_b64 = jwt_token_encoded[2] if len(jwt_token_encoded) > 2 else None
         header = json.loads(base64.urlsafe_b64decode(header_b64).decode('UTF-8'))
         payload = json.loads(base64.urlsafe_b64decode(payload_b64).decode('UTF-8'))
     except (binascii.Error, json.JSONDecodeError) as e:
-        print(f'Error: "{e}" while parsing JWT token')
-        print("Are JWT tokens correctly formatted?")
-        return None
+        raise Exception(f"Error while parsing JWT token: {e}")
 
-    return JWTToken(header, payload, signature_b64)  # Update return value
+    return JWTToken(header, payload, signature_b64)
+
+def parse_raw_request(file):
+    """
+        Parse the raw request from a file. Totally legit and solid parser :D
+        Args:
+            file: file containing the raw request
+        Returns:
+            Parsed request as a dictionary
+    """
+    request = []
+    header_list = []
+    request_parsed = {}
+    try:
+        with open(file, 'r') as f:
+            request = f.readlines()
+    except:
+        raise Exception("Error while reading the file")
+
+    # Parse method, URL and HTTP version
+    try:
+        request_parsed['method'] = request[0].split(' ')[0]
+        request_parsed['url'] = request[0].split(' ')[1]
+        request_parsed['http_version'] = request[0].split(' ')[2].strip()
+    except:
+        raise Exception("Error while parsing method, URL and HTTP version")
+
+    # Parse rest of the headers
+    for i in range(1, len(request)):
+        if request[i] != '\n':
+            header_list.append(request[i].strip('\n').split())
+
+    # Add headers to the dictionary for easier access
+    for i in range(len(header_list)):
+        if header_list[i] != '':
+            request_parsed[header_list[i][0].strip(':')] = header_list[i][1]
+
+    return request_parsed
 
 def main():
     """
         Main function of the program.
     """
     args = args_parser()
-
-    jwt_list_parsed = []
+    jwt_parsed = ''
 
     if args.token:
-        jwt_list_parsed.append(jwt_parse(args.token))
+        jwt_parsed = jwt_parse(args.token)
     elif args.file:
         with open(args.file, 'r', encoding='utf-8') as f:
-            tokens = f.readlines()
-            for token in tokens:
-                parsed_token = jwt_parse(token.strip())
-                jwt_list_parsed.append(parsed_token)
+            token = f.readline()
+            jwt_parsed = jwt_parse(f.readline())
+        f.close()
     else:
-        print('No JWTs provided.')
+        logger.error('[-] No JWT provided.')
 
     if args.none:
-        for jwt_token in jwt_list_parsed:
-            jwt_token.change_algorithm('none')
-            print(jwt_token.encoded_to_string())
-    else:
-        for jwt_token in jwt_list_parsed:
-            for part in jwt_token.token_decoded:
-                print(part)
-            print()
+        jwt_parsed.change_algorithm('none')
+
+    if args.pd:
+        print(jwt_parsed.decoded_to_string())
+    
+    if args.pe:
+        print(jwt_parsed.encoded_to_string())
+
+    if args.request:
+        parsed_request = parse_raw_request(args.request)
+        headers = {}
+ 
+        for header, value in list(parsed_request.items())[3:]:
+            headers[header] = value
+            s = requests.Session()
+ 
+        if parsed_request['method'] == 'GET':
+            try:
+                res = s.get(parsed_request['url'], headers=headers)
+                print(f'[+] Response status code: {res.status_code}')
+            except requests.exceptions.InvalidSchema as exc:
+                raise Exception("Error while sending GET request") from exc
+        else:
+            logger.error('[-] Method not supported')
 
 if __name__ == '__main__':
     main()
