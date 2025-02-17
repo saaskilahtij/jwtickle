@@ -5,11 +5,9 @@ Description: The tool to use when you want to tickle the security of JWTs.
 import argparse
 import json
 import base64
-import binascii
-import requests
-import sys
-from jwt_token import JWTToken
 import logging
+import requests
+from jwt_token import JWTToken
 logger = logging.getLogger(__name__)
 
 # Add tests for printing the encoded and decoded JWTTokens
@@ -28,8 +26,10 @@ def args_parser():
     parser.add_argument('-f', '--file', type=str, help='file containing a JWT')
     parser.add_argument('-n', '--none', action='store_true', help='use none algorithm')
     parser.add_argument('-r', '--request', type=str, help='make a request with a curl txt file')
-    parser.add_argument('--pd', '--print-decoded', action='store_true' , help='print the decoded JWToken')
-    parser.add_argument('--pe', '--print-encoded', action='store_true', help="print the encoded JWToken")
+    parser.add_argument('--pd', '--print-decoded', action='store_true' ,
+                        help='print the decoded JWToken')
+    parser.add_argument('--pe', '--print-encoded', action='store_true',
+                        help="print the encoded JWToken")
     args = parser.parse_args()
     if args.token and args.file:
         parser.error("[-] do not pass both arguments -t/--token and -f/--file")
@@ -65,8 +65,8 @@ def jwt_parse(jwt_token):
         signature_b64 = jwt_token_encoded[2] if len(jwt_token_encoded) > 2 else None
         header = json.loads(base64.urlsafe_b64decode(header_b64).decode('UTF-8'))
         payload = json.loads(base64.urlsafe_b64decode(payload_b64).decode('UTF-8'))
-    except (binascii.Error, json.JSONDecodeError) as e:
-        raise Exception(f"Error while parsing JWT token: {e}")
+    except (json.JSONDecodeError) as e:
+        raise Exception(f"Error while parsing JWT token: {e}") from e
 
     return JWTToken(header, payload, signature_b64)
 
@@ -82,10 +82,10 @@ def parse_raw_request(file):
     header_list = []
     request_parsed = {}
     try:
-        with open(file, 'r') as f:
+        with open(file, 'r', encoding='utf-8') as f:
             request = f.readlines()
-    except:
-        raise Exception("Error while reading the file")
+    except Exception as e:
+        raise Exception("Error while reading the file") from e
 
     # Parse method, URL and HTTP version
     try:
@@ -118,7 +118,6 @@ def main():
         jwt_parsed = jwt_parse(args.token)
     elif args.file:
         with open(args.file, 'r', encoding='utf-8') as f:
-            token = f.readline()
             jwt_parsed = jwt_parse(f.readline())
         f.close()
     else:
@@ -129,18 +128,18 @@ def main():
 
     if args.pd:
         print(jwt_parsed.decoded_to_string())
-    
+
     if args.pe:
         print(jwt_parsed.encoded_to_string())
 
     if args.request:
         parsed_request = parse_raw_request(args.request)
         headers = {}
- 
+
         for header, value in list(parsed_request.items())[3:]:
             headers[header] = value
             s = requests.Session()
- 
+
         if parsed_request['method'] == 'GET':
             try:
                 res = s.get(parsed_request['url'], headers=headers)
