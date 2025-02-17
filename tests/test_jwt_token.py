@@ -8,7 +8,7 @@ The tests cover the following functionalities:
 """
 
 import json
-from source.jwtickle import JWTToken
+from source.jwt_token import JWTToken
 
 def test_jwt_token_initialization():
     """

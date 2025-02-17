@@ -14,6 +14,7 @@ import base64
 import pytest
 from source.jwtickle import args_parser, jwt_parse
 
+
 def test_no_arguments():
     """
     Test that the program exits when no arguments are provided.

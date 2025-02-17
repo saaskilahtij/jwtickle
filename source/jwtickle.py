@@ -12,7 +12,7 @@ from jwt_token import JWTToken
 import logging
 logger = logging.getLogger(__name__)
 
-# TODO ACTUALLY I JUST NEED TO CONSTRUCT THE JWTOKEN IN THE JWTOKEN CLASS
+# Add tests for printing the encoded and decoded JWTTokens
 
 DESC = r"""
         JWTickle is a tool to tickle the security of JWTs.
